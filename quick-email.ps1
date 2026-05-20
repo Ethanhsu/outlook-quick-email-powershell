@@ -23,58 +23,114 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(400, 240)
+$form.Size = New-Object System.Drawing.Size(420, 310)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 
-$labelStyle = New-Object System.Windows.Forms.Label
-$labelStyle.Text = "Subject Prefix"
-$labelStyle.Location = New-Object System.Drawing.Point(20, 20)
-$labelStyle.AutoSize = $true
-$form.Controls.Add($labelStyle)
+$padding = 24
+$labelW = 100
+$comboW = 270
+$textW = 270
+$leftPad = 24
+$comboH = 26
+$rowH = 32
 
+$y = $padding
+
+# Subject Prefix
+$lbl1 = New-Object System.Windows.Forms.Label
+$lbl1.Text = "Subject Prefix"
+$lbl1.Location = New-Object System.Drawing.Point($leftPad, $y)
+$lbl1.AutoSize = $true
+$form.Controls.Add($lbl1)
+
+$y += 18
 $subjectCombo = New-Object System.Windows.Forms.ComboBox
-$subjectCombo.Location = New-Object System.Drawing.Point(20, 42)
-$subjectCombo.Size = New-Object System.Drawing.Size(360, 25)
+$subjectCombo.Location = New-Object System.Drawing.Point($leftPad, $y)
+$subjectCombo.Size = New-Object System.Drawing.Size($textW, $comboH)
 $subjectCombo.Items.AddRange(@("[BUG]", "[FEATURE]", "[URGENT]"))
 $subjectCombo.SelectedIndex = 0
 $form.Controls.Add($subjectCombo)
 
-$labelDate = New-Object System.Windows.Forms.Label
-$labelDate.Text = "Date"
-$labelDate.Location = New-Object System.Drawing.Point(20, 75)
-$labelDate.AutoSize = $true
-$form.Controls.Add($labelDate)
+$y += $rowH
 
+# SPL Entry (user text input)
+$lbl2 = New-Object System.Windows.Forms.Label
+$lbl2.Text = "SPL Entry"
+$lbl2.Location = New-Object System.Drawing.Point($leftPad, $y)
+$lbl2.AutoSize = $true
+$form.Controls.Add($lbl2)
+
+$y += 18
+$splBox = New-Object System.Windows.Forms.TextBox
+$splBox.Location = New-Object System.Drawing.Point($leftPad, $y)
+$splBox.Size = New-Object System.Drawing.Size($textW, 22)
+$splBox.PlaceholderText = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+$form.Controls.Add($splBox)
+
+$y += $rowH
+
+# Date
+$lbl3 = New-Object System.Windows.Forms.Label
+$lbl3.Text = "Date"
+$lbl3.Location = New-Object System.Drawing.Point($leftPad, $y)
+$lbl3.AutoSize = $true
+$form.Controls.Add($lbl3)
+
+$y += 18
 $dateCombo = New-Object System.Windows.Forms.ComboBox
-$dateCombo.Location = New-Object System.Drawing.Point(20, 97)
-$dateCombo.Size = New-Object System.Drawing.Size(360, 25)
+$dateCombo.Location = New-Object System.Drawing.Point($leftPad, $y)
+$dateCombo.Size = New-Object System.Drawing.Size($textW, $comboH)
 foreach ($opt in Get-DateOptions) { $dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
 $form.Controls.Add($dateCombo)
 
-$labelContent = New-Object System.Windows.Forms.Label
-$labelContent.Text = "Content"
-$labelContent.Location = New-Object System.Windows.Forms.Point(20, 130)
-$labelContent.AutoSize = $true
-$form.Controls.Add($labelContent)
+$y += $rowH + 4
 
-$contentBox = New-Object System.Windows.Forms.TextBox
-$contentBox.Location = New-Object System.Drawing.Point(20, 152)
-$contentBox.Size = New-Object System.Drawing.Size(360, 22)
-$form.Controls.Add($contentBox)
+# Preview label
+$previewLbl = New-Object System.Windows.Forms.Label
+$previewLbl.Text = "Preview:"
+$previewLbl.Location = New-Object System.Drawing.Point($leftPad, $y)
+$previewLbl.AutoSize = $true
+$previewLbl.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
+$form.Controls.Add($previewLbl)
 
+$y += 16
+
+# Preview subject
+$subjectPreview = New-Object System.Windows.Forms.Label
+$subjectPreview.Name = "subjectPreview"
+$subjectPreview.Text = "[Power Automate Admin] Add SPL entry ::"
+$subjectPreview.Location = New-Object System.Drawing.Point($leftPad, $y)
+$subjectPreview.AutoSize = $true
+$subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
+$subjectPreview.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$form.Controls.Add($subjectPreview)
+
+$y += $rowH + 8
+
+# Create button - full width with padding
 $createBtn = New-Object System.Windows.Forms.Button
 $createBtn.Text = "Create Email"
-$createBtn.Location = New-Object System.Drawing.Point(20, 185)
-$createBtn.Size = New-Object System.Drawing.Size(360, 32)
+$createBtn.Location = New-Object System.Drawing.Point($leftPad, $y)
+$createBtn.Size = New-Object System.Drawing.Size($textW, 36)
 $createBtn.FlatStyle = "Flat"
 $createBtn.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $createBtn.ForeColor = [System.Drawing.Color]::White
-$createBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+$createBtn.Font = New-Object System.Drawing.Font("Segoe UI", 11, [System.Drawing.FontStyle]::Bold)
 $form.Controls.Add($createBtn)
+
+# ---------- Update preview on change ----------
+function Update-Preview {
+    $spl = $splBox.Text.Trim()
+    if ($spl -eq "") { $spl = "<SPL Entry>" }
+    $dateVal = $dateCombo.SelectedItem
+    $subjectPreview.Text = "[Power Automate Admin] Add SPL entry $spl::$dateVal"
+}
+$splBox.Add_TextChanged({ Update-Preview })
+$dateCombo.Add_SelectedIndexChanged({ Update-Preview })
 
 # ---------- Button Action ----------
 $createBtn.Add_Click({
@@ -82,14 +138,19 @@ $createBtn.Add_Click({
         $outlook = New-Object -ComObject Outlook.Application
         $mail = $outlook.CreateItem(0)  # 0 = olMailItem
 
-        $subjectType = $subjectCombo.SelectedItem
+        $spl = $splBox.Text.Trim()
         $dateVal = $dateCombo.SelectedItem
-        $contentVal = $contentBox.Text.Trim()
+
+        if ($spl -eq "") {
+            [System.Windows.Forms.MessageBox]::Show("Please enter the SPL Entry.", "Quick Email", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
+            return
+        }
+
+        $fullSubject = "[Power Automate Admin] Add SPL entry $spl::$dateVal"
 
         $mail.To = $fixedRecipient
-        $mail.Subject = "$subjectType $dateVal - $contentVal"
-        $mail.Body = "Type: $($subjectType.Replace('[','').Replace(']',''))`nDate: $dateVal`nNote: $contentVal"
-        $mail.HTMLBody = "<b>Type:</b> $($subjectType.Replace('[','').Replace(']',''))<br><b>Date:</b> $dateVal<br><b>Note:</b> $contentVal"
+        $mail.Subject = $fullSubject
+        $mail.Body = "Subject: $fullSubject`n`nTo: $fixedRecipient"
         $mail.Display()
 
         $form.Close()
