@@ -23,99 +23,81 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(420, 310)
+$form.Size = New-Object System.Drawing.Size(600, 300)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 
-$padding = 24
-$labelW = 100
-$comboW = 270
-$textW = 270
-$leftPad = 24
-$comboH = 26
-$rowH = 32
-
-$y = $padding
-
-# Subject Prefix
-$lbl1 = New-Object System.Windows.Forms.Label
-$lbl1.Text = "Subject Prefix"
-$lbl1.Location = New-Object System.Drawing.Point($leftPad, $y)
-$lbl1.AutoSize = $true
-$form.Controls.Add($lbl1)
-
-$y += 18
-$subjectCombo = New-Object System.Windows.Forms.ComboBox
-$subjectCombo.Location = New-Object System.Drawing.Point($leftPad, $y)
-$subjectCombo.Size = New-Object System.Drawing.Size($textW, $comboH)
-$subjectCombo.Items.AddRange(@("[BUG]", "[FEATURE]", "[URGENT]"))
-$subjectCombo.SelectedIndex = 0
-$form.Controls.Add($subjectCombo)
-
-$y += $rowH
+$labelX = 16
+$inputX = 16
+$inputW = 568
+$rowH = 30
+$rowGap = 6
+$y = 20
 
 # SPL Entry (user text input)
-$lbl2 = New-Object System.Windows.Forms.Label
-$lbl2.Text = "SPL Entry"
-$lbl2.Location = New-Object System.Drawing.Point($leftPad, $y)
-$lbl2.AutoSize = $true
-$form.Controls.Add($lbl2)
+$lblSpl = New-Object System.Windows.Forms.Label
+$lblSpl.Text = "SPL Entry"
+$lblSpl.Location = New-Object System.Drawing.Point($labelX, $y)
+$lblSpl.AutoSize = $true
+$form.Controls.Add($lblSpl)
 
 $y += 18
 $splBox = New-Object System.Windows.Forms.TextBox
-$splBox.Location = New-Object System.Drawing.Point($leftPad, $y)
-$splBox.Size = New-Object System.Drawing.Size($textW, 22)
+$splBox.Location = New-Object System.Drawing.Point($inputX, $y)
+$splBox.Size = New-Object System.Drawing.Size($inputW, 26)
 $splBox.PlaceholderText = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+$splBox.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $form.Controls.Add($splBox)
 
-$y += $rowH
+$y += $rowH + $rowGap
 
 # Date
-$lbl3 = New-Object System.Windows.Forms.Label
-$lbl3.Text = "Date"
-$lbl3.Location = New-Object System.Drawing.Point($leftPad, $y)
-$lbl3.AutoSize = $true
-$form.Controls.Add($lbl3)
+$lblDate = New-Object System.Windows.Forms.Label
+$lblDate.Text = "Date"
+$lblDate.Location = New-Object System.Drawing.Point($labelX, $y)
+$lblDate.AutoSize = $true
+$form.Controls.Add($lblDate)
 
 $y += 18
 $dateCombo = New-Object System.Windows.Forms.ComboBox
-$dateCombo.Location = New-Object System.Drawing.Point($leftPad, $y)
-$dateCombo.Size = New-Object System.Drawing.Size($textW, $comboH)
+$dateCombo.Location = New-Object System.Drawing.Point($inputX, $y)
+$dateCombo.Size = New-Object System.Drawing.Size($inputW, 26)
+$dateCombo.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 foreach ($opt in Get-DateOptions) { $dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
 $form.Controls.Add($dateCombo)
 
-$y += $rowH + 4
+$y += $rowH + 12
 
 # Preview label
 $previewLbl = New-Object System.Windows.Forms.Label
 $previewLbl.Text = "Preview:"
-$previewLbl.Location = New-Object System.Drawing.Point($leftPad, $y)
+$previewLbl.Location = New-Object System.Drawing.Point($labelX, $y)
 $previewLbl.AutoSize = $true
 $previewLbl.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
 $form.Controls.Add($previewLbl)
 
-$y += 16
+$y += 18
 
 # Preview subject
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
-$subjectPreview.Text = "[Power Automate Admin] Add SPL entry ::"
-$subjectPreview.Location = New-Object System.Drawing.Point($leftPad, $y)
+$subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
+$subjectPreview.Location = New-Object System.Drawing.Point($labelX, $y)
 $subjectPreview.AutoSize = $true
 $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
-$subjectPreview.Font = New-Object System.Drawing.Font("Segoe UI", 9)
+$subjectPreview.Font = New-Object System.Drawing.Font("Segoe UI", 10)
 $form.Controls.Add($subjectPreview)
 
-$y += $rowH + 8
+$y += $rowH + 16
 
-# Create button - full width with padding
+# Create button
 $createBtn = New-Object System.Windows.Forms.Button
 $createBtn.Text = "Create Email"
-$createBtn.Location = New-Object System.Drawing.Point($leftPad, $y)
-$createBtn.Size = New-Object System.Drawing.Size($textW, 36)
+$createBtn.Location = New-Object System.Drawing.Point($inputX, $y)
+$createBtn.Size = New-Object System.Drawing.Size($inputW, 40)
 $createBtn.FlatStyle = "Flat"
 $createBtn.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $createBtn.ForeColor = [System.Drawing.Color]::White
@@ -150,7 +132,6 @@ $createBtn.Add_Click({
 
         $mail.To = $fixedRecipient
         $mail.Subject = $fullSubject
-        $mail.Body = "Subject: $fullSubject`n`nTo: $fixedRecipient"
         $mail.Display()
 
         $form.Close()
@@ -158,5 +139,8 @@ $createBtn.Add_Click({
         [System.Windows.Forms.MessageBox]::Show("Error: $_", "Quick Email Error", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 })
+
+# Icon - set to Outlook's icon so it looks professional
+$form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon("C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE")
 
 $form.ShowDialog()
