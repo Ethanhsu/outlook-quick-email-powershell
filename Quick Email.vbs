@@ -33,7 +33,7 @@ If Not fso.FileExists(shortcutPath) Then
 End If
 
 ' Run the PowerShell script
-shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & psScript & """", 1, False
+shell.Run "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & psScript & """", 0, False
 
 If Err.Number <> 0 Then
     WScript.Echo "Error: " & Err.Description

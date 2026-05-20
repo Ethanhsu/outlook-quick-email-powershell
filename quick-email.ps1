@@ -25,7 +25,7 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(430, 265)
+$form.Size = New-Object System.Drawing.Size(430, 270)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
@@ -116,7 +116,7 @@ $form.Controls.Add($previewLbl)
 $y += $lblH + $gapLblToInput
 
 # --- Preview subject ---
-$previewH = 40  # Fixed height for preview text area (allows 2 lines of wrapped text)
+$previewH = 60  # Fixed height for preview text area (allows 2-3 lines of wrapped text)
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
 $subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
@@ -126,7 +126,7 @@ $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
 $form.Controls.Add($subjectPreview)
 
-$y += $previewH + $gapInputToNext
+$y += $previewH + $gapInputToNext  # y = 138+60+14 = 212
 
 # --- Create button ---
 $createBtn = New-Object System.Windows.Forms.Button
