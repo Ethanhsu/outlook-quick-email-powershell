@@ -9,8 +9,9 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 ' Get script directory (where this .vbs is located)
 scriptDir = fso.GetParentFolderName(WScript.ScriptFullName)
 
-' Path to the PowerShell script
+' Path to the PowerShell script and icon
 psScript = scriptDir & "\quick-email.ps1"
+iconPath = scriptDir & "\icon.ico"
 
 ' Create shortcut on Desktop if it doesn't exist
 desktopPath = shell.SpecialFolders("Desktop")
@@ -22,7 +23,11 @@ If Not fso.FileExists(shortcutPath) Then
     shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -File """ & psScript & """"
     shortcut.WorkingDirectory = scriptDir
     shortcut.Description = "Quick Email - Create preset emails fast"
-    shortcut.IconLocation = "outlook.exe,0"
+    If fso.FileExists(iconPath) Then
+        shortcut.IconLocation = iconPath
+    Else
+        shortcut.IconLocation = "outlook.exe,0"
+    End If
     shortcut.Save
     WScript.Echo "Shortcut created on Desktop: " & shortcutPath
 End If

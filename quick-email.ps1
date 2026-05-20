@@ -23,7 +23,7 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(600, 340)
+$form.Size = New-Object System.Drawing.Size(480, 340)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
@@ -31,7 +31,7 @@ $form.MinimizeBox = $false
 
 $labelX = 16
 $inputX = 16
-$inputW = 568
+$inputW = 448
 $rowH = 30
 $rowGap = 6
 $y = 20
@@ -141,6 +141,9 @@ $createBtn.Add_Click({
 })
 
 # Icon - set to Outlook's icon so it looks professional
-$form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon("C:\Program Files\Microsoft Office\root\Office16\OUTLOOK.EXE")
+$iconPath = Join-Path $PSScriptRoot "icon.ico"
+if (Test-Path $iconPath) {
+    $form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon($iconPath)
+}
 
 $form.ShowDialog()
