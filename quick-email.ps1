@@ -25,7 +25,7 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(430, 250)
+$form.Size = New-Object System.Drawing.Size(430, 265)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
@@ -33,11 +33,12 @@ $form.MinimizeBox = $false
 
 $font = New-Object System.Drawing.Font("Segoe UI", 9)
 $leftX = 16
+$formW = 430
 $inputW = 398
 $inputH = 22
 $lblH = 13
-$gapLblToInput = 3
-$gapInputToNext = 12
+$gapLblToInput = 4
+$gapInputToNext = 14
 
 $y = 16
 
@@ -55,9 +56,30 @@ $y += $lblH + $gapLblToInput
 $splBox = New-Object System.Windows.Forms.TextBox
 $splBox.Location = New-Object System.Drawing.Point($leftX, $y)
 $splBox.Size = New-Object System.Drawing.Size($inputW, $inputH)
-$splBox.PlaceholderText = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+$splBox.Text = ""
 $splBox.Font = $font
 $form.Controls.Add($splBox)
+
+# Watermark via GotFocus/LostFocus
+$watermark = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+$watermarkColor = [System.Drawing.Color]::FromArgb(130, 130, 130)
+$normalColor = $splBox.ForeColor
+
+$splBox.Add_GotFocus({
+    if ($this.Text -eq $watermark) {
+        $this.Text = ""
+        $this.ForeColor = $normalColor
+    }
+})
+$splBox.Add_LostFocus({
+    if ($this.Text -eq "") {
+        $this.Text = $watermark
+        $this.ForeColor = $watermarkColor
+    }
+})
+# Init state
+$splBox.Text = $watermark
+$splBox.ForeColor = $watermarkColor
 
 $y += $inputH + $gapInputToNext
 
@@ -103,10 +125,9 @@ $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
 $form.Controls.Add($subjectPreview)
 
-# After AutoSize, get actual height used
-$previewActualH = $subjectPreview.PreferredHeight
+$previewH = $subjectPreview.PreferredHeight
 
-$y += $previewActualH + $gapInputToNext
+$y += $previewH + $gapInputToNext
 
 # --- Create button ---
 $createBtn = New-Object System.Windows.Forms.Button
@@ -119,10 +140,15 @@ $createBtn.ForeColor = [System.Drawing.Color]::White
 $createBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
 $form.Controls.Add($createBtn)
 
+$y += 34 + 16  # button height + bottom margin
+
+$form.Size = New-Object System.Drawing.Size($formW, $y)
+
 # ---------- Update preview on change ----------
 function Update-Preview {
     $spl = $splBox.Text.Trim()
-    if ($spl -eq "") { $spl = "<SPL Entry>" }
+    $isPlaceholder = ($splBox.Text -eq $watermark)
+    if ($isPlaceholder) { $spl = "<SPL Entry>" }
     $dateVal = $dateCombo.SelectedItem
     $subjectPreview.Text = "[Power Automate Admin] Add SPL entry $spl<::>$dateVal"
 }
@@ -135,6 +161,7 @@ $createBtn.Add_Click({
         $outlook = New-Object -ComObject Outlook.Application
         $mail = $outlook.CreateItem(0)
         $spl = $splBox.Text.Trim()
+        if ($spl -eq $watermark) { $spl = "" }
         $dateVal = $dateCombo.SelectedItem
         if ($spl -eq "") {
             [System.Windows.Forms.MessageBox]::Show("Please enter the SPL Entry.", "Quick Email", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
