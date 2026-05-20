@@ -28,10 +28,10 @@ $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
-
+$form.Size = New-Object System.Drawing.Size(430, 250)
 $font = New-Object System.Drawing.Font("Segoe UI", 9)
-$leftX = 22
-$inputW = 396
+$leftX = 16
+$inputW = 398
 $inputH = 24
 
 # SPL Entry label
