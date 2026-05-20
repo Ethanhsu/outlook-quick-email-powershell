@@ -28,7 +28,7 @@ $fixedRecipient = "recipient@yourcompany.com"  # <-- CHANGE THIS
 function Get-DateOptions {
     $today = Get-Date
     $candidates = New-Object System.Collections.ArrayList
-    for ($i = -6; $i -le 1; $i++) {
+    for ($i = -4; $i -le 1; $i++) {
         # Use .AddMonths() consistently — avoids bug when month=12 and you AddMonths(1)
         $d = $today.AddMonths($i)
         $first = $d.AddDays(1 - $d.Day)        # 1st of month
@@ -55,7 +55,7 @@ $form.Dock = "None"
 $LM    = 16          # left margin
 $ctrlW = 400         # all controls same width
 $formW = 432         # LM + ctrlW + RM
-$formH = 216         # total form height (ClientSize, excludes title bar)
+$formH = 224   # 14+18+4+24+4+18+4+36+4+18+36+22 = 184 + 40 padding = 224         # total form height (ClientSize, excludes title bar)
 $form.ClientSize = New-Object System.Drawing.Size($formW, $formH)
 
 # Y positions (absolute)
