@@ -39,6 +39,7 @@ $inputH = 22
 $lblH = 13
 $gapLblToInput = 4
 $gapInputToNext = 14
+$bottomMargin = 16
 
 $y = 16
 
@@ -98,7 +99,7 @@ $dateCombo = New-Object System.Windows.Forms.ComboBox
 $dateCombo.Location = New-Object System.Drawing.Point($leftX, $y)
 $dateCombo.Size = New-Object System.Drawing.Size($inputW, $inputH)
 $dateCombo.Font = $font
-foreach ($opt in Get-DateOptions) { $dateCombo.Items.Add($opt) }
+foreach ($opt in Get-DateOptions) { [void]$dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
 $form.Controls.Add($dateCombo)
 
@@ -115,17 +116,15 @@ $form.Controls.Add($previewLbl)
 $y += $lblH + $gapLblToInput
 
 # --- Preview subject ---
+$previewH = 40  # Fixed height for preview text area (allows 2 lines of wrapped text)
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
 $subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
 $subjectPreview.Location = New-Object System.Drawing.Point($leftX, $y)
-$subjectPreview.MaximumSize = New-Object System.Drawing.Size($inputW, 0)
-$subjectPreview.AutoSize = $true
+$subjectPreview.Size = New-Object System.Drawing.Size($inputW, $previewH)
 $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
 $form.Controls.Add($subjectPreview)
-
-$previewH = $subjectPreview.PreferredHeight
 
 $y += $previewH + $gapInputToNext
 
