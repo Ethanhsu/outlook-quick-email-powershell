@@ -127,7 +127,7 @@ function Update-Preview {
     $spl = $splBox.Text.Trim()
     if ($spl -eq "") { $spl = "<SPL Entry>" }
     $dateVal = $dateCombo.SelectedItem
-    $subjectPreview.Text = "[Power Automate Admin] Add SPL entry $spl::$dateVal"
+    $subjectPreview.Text = "[Power Automate Admin] Add SPL entry $spl<::>$dateVal"
 }
 $splBox.Add_TextChanged({ Update-Preview })
 $dateCombo.Add_SelectedIndexChanged({ Update-Preview })
@@ -146,7 +146,7 @@ $createBtn.Add_Click({
             return
         }
 
-        $fullSubject = "[Power Automate Admin] Add SPL entry $spl::$dateVal"
+        $fullSubject = "[Power Automate Admin] Add SPL entry $spl<::>$dateVal"
 
         $mail.To = $fixedRecipient
         $mail.Subject = $fullSubject
