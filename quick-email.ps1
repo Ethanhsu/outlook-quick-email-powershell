@@ -23,85 +23,74 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(460, 295)
+$form.Size = New-Object System.Drawing.Size(440, 250)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 
 $font = New-Object System.Drawing.Font("Segoe UI", 9)
-$labelX = 16
-$inputW = 428
-$inputH = 26
-$rowH = 26
-$gapLabel = 5
-$gapInput = 10
-$y = 16
+$leftX = 22
+$inputW = 396
+$inputH = 24
 
-# SPL Entry
+# SPL Entry label
 $lblSpl = New-Object System.Windows.Forms.Label
 $lblSpl.Text = "SPL Entry"
-$lblSpl.Location = New-Object System.Drawing.Point($labelX, $y)
+$lblSpl.Location = New-Object System.Drawing.Point($leftX, 12)
+$lblSpl.Size = New-Object System.Drawing.Size(80, 14)
 $lblSpl.Font = $font
-$lblSpl.AutoSize = $true
 $form.Controls.Add($lblSpl)
 
-$y += 14
+# SPL Entry input
 $splBox = New-Object System.Windows.Forms.TextBox
-$splBox.Location = New-Object System.Drawing.Point($labelX, $y)
+$splBox.Location = New-Object System.Drawing.Point($leftX, 26)
 $splBox.Size = New-Object System.Drawing.Size($inputW, $inputH)
 $splBox.PlaceholderText = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
 $splBox.Font = $font
 $form.Controls.Add($splBox)
 
-$y += $rowH + $gapInput
-
-# Date
+# Date label
 $lblDate = New-Object System.Windows.Forms.Label
 $lblDate.Text = "Date"
-$lblDate.Location = New-Object System.Drawing.Point($labelX, $y)
+$lblDate.Location = New-Object System.Drawing.Point($leftX, 56)
+$lblDate.Size = New-Object System.Drawing.Size(80, 14)
 $lblDate.Font = $font
-$lblDate.AutoSize = $true
 $form.Controls.Add($lblDate)
 
-$y += 14
+# Date dropdown
 $dateCombo = New-Object System.Windows.Forms.ComboBox
-$dateCombo.Location = New-Object System.Drawing.Point($labelX, $y)
+$dateCombo.Location = New-Object System.Drawing.Point($leftX, 70)
 $dateCombo.Size = New-Object System.Drawing.Size($inputW, $inputH)
 $dateCombo.Font = $font
 foreach ($opt in Get-DateOptions) { $dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
 $form.Controls.Add($dateCombo)
 
-$y += $rowH + $gapInput + 2
-
-# Preview
+# Preview label
 $previewLbl = New-Object System.Windows.Forms.Label
 $previewLbl.Text = "Preview:"
-$previewLbl.Location = New-Object System.Drawing.Point($labelX, $y)
+$previewLbl.Location = New-Object System.Drawing.Point($leftX, 100)
+$previewLbl.Size = New-Object System.Drawing.Size(80, 14)
 $previewLbl.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-$previewLbl.AutoSize = $true
 $form.Controls.Add($previewLbl)
 
-$y += 14
-
+# Preview subject
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
 $subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
-$subjectPreview.Location = New-Object System.Drawing.Point($labelX, $y)
-$subjectPreview.MaximumSize = New-Object System.Drawing.Size($inputW, 0)  # wrap at input width
+$subjectPreview.Location = New-Object System.Drawing.Point($leftX, 114)
+$subjectPreview.MaximumSize = New-Object System.Drawing.Size($inputW, 0)
 $subjectPreview.AutoSize = $true
 $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
 $form.Controls.Add($subjectPreview)
 
-$y += $rowH + 10
-
 # Create button
 $createBtn = New-Object System.Windows.Forms.Button
 $createBtn.Text = "Create Email"
-$createBtn.Location = New-Object System.Drawing.Point($labelX, $y)
-$createBtn.Size = New-Object System.Drawing.Size($inputW, 36)
+$createBtn.Location = New-Object System.Drawing.Point($leftX, 148)
+$createBtn.Size = New-Object System.Drawing.Size($inputW, 34)
 $createBtn.FlatStyle = "Flat"
 $createBtn.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $createBtn.ForeColor = [System.Drawing.Color]::White
