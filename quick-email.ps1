@@ -25,129 +25,138 @@ function Get-DateOptions {
 # ---------- Build GUI ----------
 $form = New-Object System.Windows.Forms.Form
 $form.Text = "Quick Email"
-$form.Size = New-Object System.Drawing.Size(430, 270)
 $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
 
 $font = New-Object System.Drawing.Font("Segoe UI", 9)
-$leftX = 16
-$formW = 430
-$inputW = 398
-$inputH = 22
-$lblH = 13
-$gapLblToInput = 4
-$gapInputToNext = 14
-$bottomMargin = 16
-
-$y = 16
-
-# --- SPL Entry label ---
-$lblSpl = New-Object System.Windows.Forms.Label
-$lblSpl.Text = "SPL Entry"
-$lblSpl.Location = New-Object System.Drawing.Point($leftX, $y)
-$lblSpl.Size = New-Object System.Drawing.Size(80, $lblH)
-$lblSpl.Font = $font
-$form.Controls.Add($lblSpl)
-
-$y += $lblH + $gapLblToInput
-
-# --- SPL Entry input ---
-$splBox = New-Object System.Windows.Forms.TextBox
-$splBox.Location = New-Object System.Drawing.Point($leftX, $y)
-$splBox.Size = New-Object System.Drawing.Size($inputW, $inputH)
-$splBox.Text = ""
-$splBox.Font = $font
-$form.Controls.Add($splBox)
-
-# Watermark via GotFocus/LostFocus
 $watermark = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+
+# FlowLayoutPanel with WrapContents=false goes straight down
+$flow = New-Object System.Windows.Forms.FlowLayoutPanel
+$flow.AutoSize = $true
+$flow.AutoSizeMode = "GrowOnly"
+$flow.FlowDirection = "TopDown"
+$flow.WrapContents = $false
+$flow.Padding = New-Object System.Windows.Forms.Padding(16, 14, 16, 14)
+$flow.Dock = "Fill"
+
+# Each row is a Panel with FlowDirection=LeftToRight, so label stays left, control fills right
+function New-RowPanel {
+    $p = New-Object System.Windows.Forms.Panel
+    $p.AutoSize = $true
+    $p.AutoSizeMode = "GrowWidth"
+    $p.FlowDirection = "TopDown"
+    $p.Padding = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
+    return $p
+}
+
+# ---------- SPL Entry row ----------
+$rowSpl = New-RowPanel
+
+$splLabel = New-Object System.Windows.Forms.Label
+$splLabel.Text = "SPL Entry"
+$splLabel.Font = $font
+$splLabel.AutoSize = $true
+$splLabel.Padding = New-Object System.Windows.Forms.Padding(0, 0, 0, 3)
+
+$splBox = New-Object System.Windows.Forms.TextBox
+$splBox.Width = 398
+$splBox.Font = $font
+$splBox.Margin = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
+
 $watermarkColor = [System.Drawing.Color]::FromArgb(130, 130, 130)
-$normalColor = $splBox.ForeColor
+$normalColor = [System.Drawing.Color]::Black
+$splBox.ForeColor = $watermarkColor
+$splBox.Text = $watermark
 
 $splBox.Add_GotFocus({
-    if ($this.Text -eq $watermark) {
+    if ($this.Text -eq $global:watermark) {
         $this.Text = ""
-        $this.ForeColor = $normalColor
+        $this.ForeColor = $global:normalColor
     }
 })
 $splBox.Add_LostFocus({
     if ($this.Text -eq "") {
-        $this.Text = $watermark
-        $this.ForeColor = $watermarkColor
+        $this.Text = $global:watermark
+        $this.ForeColor = $global:watermarkColor
     }
 })
-# Init state
-$splBox.Text = $watermark
-$splBox.ForeColor = $watermarkColor
 
-$y += $inputH + $gapInputToNext
+$rowSpl.Controls.Add($splLabel)
+$rowSpl.Controls.Add($splBox)
 
-# --- Date label ---
-$lblDate = New-Object System.Windows.Forms.Label
-$lblDate.Text = "Date"
-$lblDate.Location = New-Object System.Drawing.Point($leftX, $y)
-$lblDate.Size = New-Object System.Drawing.Size(80, $lblH)
-$lblDate.Font = $font
-$form.Controls.Add($lblDate)
+# ---------- Date row ----------
+$rowDate = New-RowPanel
 
-$y += $lblH + $gapLblToInput
+$dateLabel = New-Object System.Windows.Forms.Label
+$dateLabel.Text = "Date"
+$dateLabel.Font = $font
+$dateLabel.AutoSize = $true
+$dateLabel.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 3)
 
-# --- Date dropdown ---
 $dateCombo = New-Object System.Windows.Forms.ComboBox
-$dateCombo.Location = New-Object System.Drawing.Point($leftX, $y)
-$dateCombo.Size = New-Object System.Drawing.Size($inputW, $inputH)
+$dateCombo.Width = 398
 $dateCombo.Font = $font
 foreach ($opt in Get-DateOptions) { [void]$dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
-$form.Controls.Add($dateCombo)
 
-$y += $inputH + $gapInputToNext
+$rowDate.Controls.Add($dateLabel)
+$rowDate.Controls.Add($dateCombo)
 
-# --- Preview label ---
+# ---------- Preview row ----------
+$rowPreview = New-RowPanel
+$rowPreview.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 0)
+
 $previewLbl = New-Object System.Windows.Forms.Label
 $previewLbl.Text = "Preview:"
-$previewLbl.Location = New-Object System.Drawing.Point($leftX, $y)
-$previewLbl.Size = New-Object System.Drawing.Size(80, $lblH)
 $previewLbl.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-$form.Controls.Add($previewLbl)
+$previewLbl.AutoSize = $true
 
-$y += $lblH + $gapLblToInput
-
-# --- Preview subject ---
-$previewH = 60  # Fixed height for preview text area (allows 2-3 lines of wrapped text)
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
 $subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
-$subjectPreview.Location = New-Object System.Drawing.Point($leftX, $y)
-$subjectPreview.Size = New-Object System.Drawing.Size($inputW, $previewH)
+$subjectPreview.AutoSize = $false
+$subjectPreview.Width = 398
+$subjectPreview.Height = 36
+$subjectPreview.TextAlign = "TopLeft"
 $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
-$form.Controls.Add($subjectPreview)
 
-$y += $previewH + $gapInputToNext  # y = 138+60+14 = 212
+$rowPreview.Controls.Add($previewLbl)
+$rowPreview.Controls.Add($subjectPreview)
 
-# --- Create button ---
+# ---------- Button row ----------
+$rowBtn = New-RowPanel
+$rowBtn.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 0)
+
 $createBtn = New-Object System.Windows.Forms.Button
 $createBtn.Text = "Create Email"
-$createBtn.Location = New-Object System.Drawing.Point($leftX, $y)
-$createBtn.Size = New-Object System.Drawing.Size($inputW, 34)
+$createBtn.Width = 398
+$createBtn.Height = 36
 $createBtn.FlatStyle = "Flat"
 $createBtn.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $createBtn.ForeColor = [System.Drawing.Color]::White
 $createBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
-$form.Controls.Add($createBtn)
 
-$y += 34 + 16  # button height + bottom margin
+$rowBtn.Controls.Add($createBtn)
 
-$form.Size = New-Object System.Drawing.Size($formW, $y)
+# Add all rows to flow panel
+$flow.Controls.Add($rowSpl)
+$flow.Controls.Add($rowDate)
+$flow.Controls.Add($rowPreview)
+$flow.Controls.Add($rowBtn)
+
+$form.Controls.Add($flow)
+$form.AutoSize = $true
+$form.AutoSizeMode = "GrowAndShrink"
+$form.MinimumSize = New-Object System.Drawing.Size(430, 200)
 
 # ---------- Update preview on change ----------
 function Update-Preview {
     $spl = $splBox.Text.Trim()
-    $isPlaceholder = ($splBox.Text -eq $watermark)
-    if ($isPlaceholder) { $spl = "<SPL Entry>" }
+    if ($spl -eq "" -or $spl -eq $watermark) { $spl = "<SPL Entry>" }
     $dateVal = $dateCombo.SelectedItem
     $subjectPreview.Text = "[Power Automate Admin] Add SPL entry $spl<::>$dateVal"
 }
