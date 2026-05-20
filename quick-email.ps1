@@ -7,18 +7,18 @@ Add-Type -AssemblyName System.Drawing
 # ---------- Config ----------
 $fixedRecipient = "recipient@yourcompany.com"  # <-- CHANGE THIS
 
-# Generate 1st and 5th of each month, 6 months ago to 1 month ahead, descending
 function Get-DateOptions {
     $today = Get-Date
-    $candidates = @()
+    $candidates = New-Object System.Collections.ArrayList
     for ($i = -6; $i -le 1; $i++) {
         $d = $today.AddMonths($i)
         $first = Get-Date -Year $d.Year -Month $d.Month -Day 1
         $fifth = Get-Date -Year $d.Year -Month $d.Month -Day 5
-        $candidates += $first.ToString("yyyy-MM-dd")
-        $candidates += $fifth.ToString("yyyy-MM-dd")
+        [void]$candidates.Add($first.ToString("yyyy-MM-dd"))
+        [void]$candidates.Add($fifth.ToString("yyyy-MM-dd"))
     }
-    $candidates = $candidates | Sort-Object -Descending
+    $candidates.Sort()
+    [array]::Reverse($candidates)
     return $candidates
 }
 
@@ -29,42 +29,66 @@ $form.StartPosition = "CenterScreen"
 $form.FormBorderStyle = "FixedDialog"
 $form.MaximizeBox = $false
 $form.MinimizeBox = $false
+$form.AutoSize = $false
 
 $font = New-Object System.Drawing.Font("Segoe UI", 9)
 $watermark = "e.g. 14-41-13.00-UG-U00-STD-HEL-04/84"
+$LM = 16
+$RM = 16
+$ctrlW = 400
+$formW = $LM + $ctrlW + $RM  # 432
 
-# FlowLayoutPanel with WrapContents=false goes straight down
-$flow = New-Object System.Windows.Forms.FlowLayoutPanel
-$flow.AutoSize = $true
-$flow.AutoSizeMode = "GrowOnly"
-$flow.FlowDirection = "TopDown"
-$flow.WrapContents = $false
-$flow.Padding = New-Object System.Windows.Forms.Padding(16, 14, 16, 14)
-$flow.Dock = "Fill"
+# Form height: row heights + top/bottom padding
+# Row heights: 16+24+10+16+24+10+16+40+10+36 = 202
+# Top+bottom padding: 14+14 = 28
+$formH = 230
+$form.ClientSize = New-Object System.Drawing.Size($formW, $formH)
 
-# Each row is a Panel with FlowDirection=LeftToRight, so label stays left, control fills right
-function New-RowPanel {
-    $p = New-Object System.Windows.Forms.Panel
-    $p.AutoSize = $true
-    $p.AutoSizeMode = "GrowWidth"
-    $p.FlowDirection = "TopDown"
-    $p.Padding = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
-    return $p
+# Single column TableLayoutPanel — stretches controls horizontally
+$tbl = New-Object System.Windows.Forms.TableLayoutPanel
+$tbl.Dock = "Fill"
+$tbl.AutoSize = $false
+$tbl.ColumnCount = 1
+$tbl.ColumnStyles.Add((New-Object System.Windows.Forms.ColumnStyle([System.Windows.Forms.SizeType]::Percent, 100)))
+$tbl.RowCount = 0
+$tbl.Padding = New-Object System.Windows.Forms.Padding($LM, 14, $RM, 14)
+
+function AddRow($h) {
+    $tbl.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, $h)))
+    $tbl.RowCount++
+    return $tbl.RowCount - 1
 }
 
-# ---------- SPL Entry row ----------
-$rowSpl = New-RowPanel
+function Place($ctrl, $row) {
+    $tbl.SetColumn($ctrl, 0)
+    $tbl.SetRow($ctrl, $row)
+    $tbl.Controls.Add($ctrl)
+}
 
+$r0 = AddRow 16     # SPL label
+$r1 = AddRow 24     # SPL input
+$r2 = AddRow 10     # gap
+$r3 = AddRow 16     # Date label
+$r4 = AddRow 24     # Date dropdown
+$r5 = AddRow 10     # gap
+$r6 = AddRow 16     # Preview label
+$r7 = AddRow 40     # Preview text
+$r8 = AddRow 10     # gap
+$r9 = AddRow 36     # button
+
+# SPL label
 $splLabel = New-Object System.Windows.Forms.Label
 $splLabel.Text = "SPL Entry"
 $splLabel.Font = $font
-$splLabel.AutoSize = $true
-$splLabel.Padding = New-Object System.Windows.Forms.Padding(0, 0, 0, 3)
+$splLabel.Dock = "Fill"
+Place $splLabel $r0
 
+# SPL input — stretches to full TableLayoutPanel width
 $splBox = New-Object System.Windows.Forms.TextBox
-$splBox.Width = 398
 $splBox.Font = $font
-$splBox.Margin = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
+$splBox.Size = New-Object System.Drawing.Size($ctrlW, 22)
+$splBox.Anchor = [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
+$splBox.TextAlign = [System.Windows.Forms.HorizontalAlignment]::Left
 
 $watermarkColor = [System.Drawing.Color]::FromArgb(130, 130, 130)
 $normalColor = [System.Drawing.Color]::Black
@@ -83,75 +107,54 @@ $splBox.Add_LostFocus({
         $this.ForeColor = $global:watermarkColor
     }
 })
+Place $splBox $r1
 
-$rowSpl.Controls.Add($splLabel)
-$rowSpl.Controls.Add($splBox)
-
-# ---------- Date row ----------
-$rowDate = New-RowPanel
-
+# Date label
 $dateLabel = New-Object System.Windows.Forms.Label
 $dateLabel.Text = "Date"
 $dateLabel.Font = $font
-$dateLabel.AutoSize = $true
-$dateLabel.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 3)
+$dateLabel.Dock = "Fill"
+Place $dateLabel $r3
 
+# Date dropdown
 $dateCombo = New-Object System.Windows.Forms.ComboBox
-$dateCombo.Width = 398
 $dateCombo.Font = $font
+$dateCombo.Size = New-Object System.Drawing.Size($ctrlW, 22)
+$dateCombo.Anchor = [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
 foreach ($opt in Get-DateOptions) { [void]$dateCombo.Items.Add($opt) }
 $dateCombo.SelectedIndex = 0
+Place $dateCombo $r4
 
-$rowDate.Controls.Add($dateLabel)
-$rowDate.Controls.Add($dateCombo)
-
-# ---------- Preview row ----------
-$rowPreview = New-RowPanel
-$rowPreview.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 0)
-
+# Preview label
 $previewLbl = New-Object System.Windows.Forms.Label
 $previewLbl.Text = "Preview:"
 $previewLbl.Font = New-Object System.Drawing.Font("Segoe UI", 8, [System.Drawing.FontStyle]::Bold)
-$previewLbl.AutoSize = $true
+$previewLbl.Dock = "Fill"
+Place $previewLbl $r6
 
+# Preview text
 $subjectPreview = New-Object System.Windows.Forms.Label
 $subjectPreview.Name = "subjectPreview"
 $subjectPreview.Text = "[Power Automate Admin] Add SPL entry <::>"
-$subjectPreview.AutoSize = $false
-$subjectPreview.Width = 398
-$subjectPreview.Height = 36
-$subjectPreview.TextAlign = "TopLeft"
+$subjectPreview.Size = New-Object System.Drawing.Size($ctrlW, 40)
+$subjectPreview.TextAlign = [System.Drawing.ContentAlignment]::TopLeft
 $subjectPreview.ForeColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $subjectPreview.Font = $font
+$subjectPreview.Anchor = [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
+Place $subjectPreview $r7
 
-$rowPreview.Controls.Add($previewLbl)
-$rowPreview.Controls.Add($subjectPreview)
-
-# ---------- Button row ----------
-$rowBtn = New-RowPanel
-$rowBtn.Padding = New-Object System.Windows.Forms.Padding(0, 8, 0, 0)
-
+# Button
 $createBtn = New-Object System.Windows.Forms.Button
 $createBtn.Text = "Create Email"
-$createBtn.Width = 398
-$createBtn.Height = 36
+$createBtn.Size = New-Object System.Drawing.Size($ctrlW, 36)
+$createBtn.Anchor = [System.Windows.Forms.AnchorStyles]::Left -bor [System.Windows.Forms.AnchorStyles]::Right
 $createBtn.FlatStyle = "Flat"
 $createBtn.BackColor = [System.Drawing.Color]::FromArgb(0, 120, 212)
 $createBtn.ForeColor = [System.Drawing.Color]::White
 $createBtn.Font = New-Object System.Drawing.Font("Segoe UI", 10, [System.Drawing.FontStyle]::Bold)
+Place $createBtn $r9
 
-$rowBtn.Controls.Add($createBtn)
-
-# Add all rows to flow panel
-$flow.Controls.Add($rowSpl)
-$flow.Controls.Add($rowDate)
-$flow.Controls.Add($rowPreview)
-$flow.Controls.Add($rowBtn)
-
-$form.Controls.Add($flow)
-$form.AutoSize = $true
-$form.AutoSizeMode = "GrowAndShrink"
-$form.MinimumSize = New-Object System.Drawing.Size(430, 200)
+$form.Controls.Add($tbl)
 
 # ---------- Update preview on change ----------
 function Update-Preview {
